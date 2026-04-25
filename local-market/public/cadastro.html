@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Local Market</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .cadastro-card { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    .logo { font-size: 28px; font-weight: bold; color: #2563eb; text-align: center; margin-bottom: 30px; }
+    h2 { text-align: center; margin-bottom: 25px; color: #1f2937; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; }
+    input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
+    input:focus { outline: none; border-color: #2563eb; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: 0.3s; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .error { color: #dc2626; font-size: 14px; margin-bottom: 15px; text-align: center; display: none; }
+    .login-link { text-align: center; margin-top: 20px; color: #6b7280; }
+    .login-link a { color: #2563eb; text-decoration: none; }
+    .login-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="cadastro-card">
+    <div class="logo">Local Market</div>
+    <h2>Criar Conta</h2>
+    <div id="error" class="error"></div>
+    <form id="cadastroForm">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="senha" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label>WhatsApp (com DDD)</label>
+        <input type="tel" id="whatsapp" required placeholder="11999999999">
+      </div>
+      <button type="submit" class="btn btn-primary">Cadastrar</button>
+    </form>
+    <p class="login-link">Já tem conta? <a href="/login">Entrar</a></p>
+  </div>
+
+  <script>
+    document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const error = document.getElementById('error');
+      const whatsapp = document.getElementById('whatsapp').value.replace(/\D/g, '');
+      
+      try {
+        const res = await fetch('/api/cadastrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            senha: document.getElementById('senha').value,
+            whatsapp: whatsapp
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.sucesso) {
+          window.location.href = '/dashboard';
+        } else {
+          error.textContent = data.erro;
+          error.style.display = 'block';
+        }
+      } catch (err) {
+        error.textContent = 'Erro ao fazer cadastro';
+        error.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

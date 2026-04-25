@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produto - Local Market</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+    header { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .logo { font-size: 24px; font-weight: bold; color: #2563eb; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-whatsapp { background: #25d366; color: #fff; font-size: 16px; padding: 15px 30px; }
+    .btn-whatsapp:hover { background: #20b955; }
+    .btn-disabled { background: #9ca3af; cursor: not-allowed; }
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+    .product-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .product-img { width: 100%; height: 400px; object-fit: cover; background: #e5e5e5; }
+    .product-body { padding: 30px; }
+    .product-title { font-size: 28px; font-weight: bold; margin-bottom: 15px; color: #1f2937; }
+    .product-price { font-size: 32px; font-weight: bold; color: #2563eb; margin-bottom: 20px; }
+    .product-desc { color: #4b5563; line-height: 1.7; margin-bottom: 25px; }
+    .security-section { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .security-title { color: #92400e; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .security-desc { color: #92400e; font-size: 14px; margin-bottom: 15px; }
+    .selfie-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    #video { width: 280px; height: 280px; border-radius: 12px; object-fit: cover; background: #000; }
+    #canvas { display: none; }
+    #selfiePreview { width: 280px; height: 280px; border-radius: 12px; object-fit: cover; display: none; border: 3px solid #10b981; }
+    .btn-verify { background: #f59e0b; color: #fff; padding: 12px 25px; font-size: 15px; }
+    .btn-verify:hover { background: #d97706; }
+    .verified-badge { display: none; background: #10b981; color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; margin: 15px 0; }
+    .whatsapp-btn { display: block; width: 100%; text-align: center; padding: 18px; font-size: 18px; font-weight: bold; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #2563eb; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .avaliacoes { margin-top: 40px; }
+    .avaliacao { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
+    .avaliacao-stars { color: #f59e0b; }
+    .loading { text-align: center; padding: 60px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">Local Market</a>
+    <a href="/login" class="btn btn-primary">Entrar / Vender</a>
+  </header>
+
+  <div class="container">
+    <a href="/" class="back-link">← Voltar à vitrine</a>
+    <div id="productContent">
+      <div class="loading">Carregando produto...</div>
+    </div>
+  </div>
+
+  <video id="video" autoplay playsinline style="display: none;"></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const slug = window.location.pathname.split('/').pop();
+    let produto = null;
+    let verified = false;
+    let sessionId = null;
+    let stream = null;
+
+    async function loadProduto() {
+      try {
+        const res = await fetch(`/api/produto/${slug}`);
+        if (!res.ok) throw new Error('Produto não encontrado');
+        produto = await res.json();
+        renderProduto();
+        loadAvaliacoes();
+      } catch (err) {
+        document.getElementById('productContent').innerHTML = '<div class="loading">Produto não encontrado.</div>';
+      }
+    }
+
+    function renderProduto() {
+      const p = produto;
+      document.title = `${p.titulo} - Local Market`;
+      
+      document.getElementById('productContent').innerHTML = `
+        <div class="product-card">
+          <img src="${p.imagem_url || ''}" alt="${p.titulo}" class="product-img" onerror="this.style.display='none'">
+          <div class="product-body">
+            <h1 class="product-title">${p.titulo}</h1>
+            <p class="product-price">R$ ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</p>
+            <p class="product-desc">${p.descricao || 'Sem descrição disponível.'}</p>
+            
+            <div class="security-section">
+              <div class="security-title">🔒 Segurança na Compra</div>
+              <p class="security-desc">Para comprar, tire uma selfie em tempo real. Isso confirma que você é uma pessoa real e ajuda a prevenir fraudes.</p>
+              <div class="selfie-container">
+                <video id="video" autoplay playsinline></video>
+                <img id="selfiePreview" alt="Selfie capturada">
+                <button id="btnTirarFoto" class="btn btn-verify" onclick="tirarSelfie()">📸 Tirar Selfie</button>
+              </div>
+            </div>
+            
+            <div id="verifiedBadge" class="verified-badge">✓ Identidade validada! Você pode agora entrar em contato com o vendedor.</div>
+            <a id="whatsappBtn" href="#" class="btn whatsapp-btn btn-disabled">🔒 Validar identidade para comprar via WhatsApp</a>
+          </div>
+        </div>
+        
+        <div class="avaliacoes">
+          <h3 style="margin-bottom: 15px;">Avaliações</h3>
+          <div id="avaliacoesList"></div>
+        </div>
+      `;
+    }
+
+    async function tirarSelfie() {
+      const video = document.getElementById('video');
+      const btn = document.getElementById('btnTirarFoto');
+      
+      try {
+        if (!stream) {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user', width: 280, height: 280 } 
+          });
+          video.srcObject = stream;
+          video.style.display = 'block';
+          btn.textContent = '✅ Confirmar Selfie';
+          return;
+        }
+        
+        const canvas = document.getElementById('canvas');
+        canvas.width = 280;
+        canvas.height = 280;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, 280, 280);
+        
+        const selfieBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        
+        document.getElementById('selfiePreview').src = selfieBase64;
+        document.getElementById('selfiePreview').style.display = 'block';
+        video.style.display = 'none';
+        
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+        
+        btn.textContent = '🔄 Tirar outra selfie';
+        btn.onclick = () => {
+          document.getElementById('selfiePreview').style.display = 'none';
+          video.style.display = 'block';
+          btn.textContent = '📸 Tirar Selfie';
+          btn.onclick = tirarSelfie;
+        };
+        
+        btn.disabled = true;
+        btn.textContent = 'Validando...';
+        
+        const res = await fetch('/api/verificacao', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            produto_id: produto.id,
+            imagem_base64: selfieBase64
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.sucesso) {
+          verified = true;
+          sessionId = data.session_id;
+          
+          document.getElementById('verifiedBadge').style.display = 'block';
+          
+          const whatsappBtn = document.getElementById('whatsappBtn');
+          whatsappBtn.href = data.link_whatsapp;
+          whatsappBtn.classList.remove('btn-disabled');
+          whatsappBtn.textContent = '💬 Comprar via WhatsApp';
+        } else {
+          alert('Erro na validação. Tente novamente.');
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Erro ao acessar câmera: ' + err.message);
+        btn.disabled = false;
+      }
+    }
+
+    async function loadAvaliacoes() {
+      try {
+        const res = await fetch(`/api/avaliacoes/${produto.id}`);
+        const avaliacoes = await res.json();
+        
+        if (avaliacoes.length === 0) {
+          document.getElementById('avaliacoesList').innerHTML = '<p style="color: #6b7280;">Sem avaliações ainda.</p>';
+          return;
+        }
+        
+        document.getElementById('avaliacoesList').innerHTML = avaliacoes.map(a => `
+          <div class="avaliacao">
+            <div class="avaliacao-stars">${'★'.repeat(a.avaliacao)}${'☆'.repeat(5 - a.avaliacao)}</div>
+            <p>${a.comentario || ''}</p>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Erro ao carregar avaliações:', err);
+      }
+    }
+
+    loadProduto();
+  </script>
+</body>
+</html>
