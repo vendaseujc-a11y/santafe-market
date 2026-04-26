@@ -1,13 +1,10 @@
 {
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "name": "santafe-marketplace",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build": "next build",
     "start": "next start"
   },
   "dependencies": {
@@ -19,7 +16,6 @@
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.33.5",
     "slugify": "^1.6.6",
     "uuid": "^14.0.0"
   },
@@ -28,7 +24,6 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/sharp": "^0.32.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
