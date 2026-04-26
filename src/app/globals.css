@@ -65,6 +65,10 @@
     @apply btn bg-ipê-400 text-sertão-900 hover:bg-ipê-300 active:bg-ipê-500;
   }
 
+  .btn-premium {
+    @apply btn bg-gradient-to-r from-yellow-400 to-yellow-600 text-sertão-900 hover:from-yellow-500 hover:to-yellow-700;
+  }
+
   .input {
     @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white transition-all duration-200
            placeholder:text-gray-400

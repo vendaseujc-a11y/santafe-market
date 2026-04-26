@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Package, Search, Plus, User, MapPin, Eye, Calendar, Shield, TrendingUp } from 'lucide-react'
+import { Package, Search, Plus, User, MapPin, Eye, Calendar, Shield, TrendingUp, Crown } from 'lucide-react'
 import { Toast, Modal, QRCodeModal, SelfieValidator } from './client'
 
 export { Toast, Modal, QRCodeModal, SelfieValidator }
@@ -20,10 +20,15 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <Link href="/login" className="btn-primary text-sm py-2">
+            <Link href="/login" className="btn-secondary text-sm py-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Área do Membro</span>
               <span className="sm:hidden">Membro</span>
+            </Link>
+            <Link href="/premium" className="btn-premium text-sm py-2">
+              <Crown className="w-4 h-4" />
+              <span className="hidden sm:inline">Clube Premium</span>
+              <span className="sm:hidden">Premium</span>
             </Link>
           </div>
         </div>
