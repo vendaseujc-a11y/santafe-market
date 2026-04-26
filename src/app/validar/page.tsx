@@ -19,8 +19,16 @@ export default function ValidarPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
-  const produtoId = searchParams.get('produto')
+  const produtoId = searchParams.get('produto') || searchParams.get('id')
+  const providedHash = searchParams.get('hash')
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  useEffect(() => {
+    if (providedHash) {
+      setHash(providedHash)
+      setStep('success')
+    }
+  }, [providedHash])
 
   useEffect(() => {
     const fetchProduto = async () => {
@@ -120,6 +128,8 @@ export default function ValidarPage() {
         }
         
         setStep('success')
+
+        window.location.href = `/validar?id=${produtoId}&hash=${data.hash}`
       } else {
         setError(data.error || 'Erro na verificação. Tente novamente.')
         setStep('preview')
