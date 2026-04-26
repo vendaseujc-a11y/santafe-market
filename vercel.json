@@ -3,5 +3,5 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --force",
   "framework": "nextjs",
-  "runtime": "nodejs-18.x"
+  "nodeVersion": "18.x"
 }
