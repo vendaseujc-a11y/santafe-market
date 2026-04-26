@@ -21,7 +21,7 @@ export default function ValidarPage() {
   const supabase = createClient()
   const produtoId = searchParams.get('produto') || searchParams.get('id')
   const providedHash = searchParams.get('hash')
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
 
   useEffect(() => {
     if (providedHash) {
@@ -36,12 +36,27 @@ export default function ValidarPage() {
       
       const { data } = await supabase
         .from('produtos')
-        .select('*, perfis!vendedores(telefone)')
+        .select('*')
         .eq('id', produtoId)
         .single()
       
       if (data) {
         setProduto(data)
+        
+        const { data: perfilData } = await supabase
+          .from('perfis')
+          .select('telefone')
+          .eq('id', data.vendedor_id)
+          .single()
+        
+        if (perfilData?.telefone) {
+          const telefone = perfilData.telefone.replace(/\D/g, '')
+          const message = `Olá, vi seu anúncio "${data.titulo}" no ${siteUrl}/anuncio/${data.slug}. Minha identidade foi validada (ID: ${providedHash || hash}). Tenho interesse!`
+          setContato({
+            link: `https://wa.me/${telefone}?text=${encodeURIComponent(message)}`,
+            telefone
+          })
+        }
       }
     }
     
@@ -118,8 +133,8 @@ export default function ValidarPage() {
       if (data.success) {
         setHash(data.hash)
         
-        if (produto?.perfis?.telefone) {
-          const telefone = produto.perfis.telefone.replace(/\D/g, '')
+        if (produto?.telefone) {
+          const telefone = produto.telefone.replace(/\D/g, '')
           const message = `Olá, vi seu anúncio "${produto.titulo}" no ${siteUrl}/anuncio/${produto.slug}. Minha identidade foi validada (ID: ${data.hash}). Tenho interesse!`
           setContato({
             link: `https://wa.me/${telefone}?text=${encodeURIComponent(message)}`,
