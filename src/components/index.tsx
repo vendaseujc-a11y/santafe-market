@@ -77,11 +77,15 @@ export function Footer() {
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm">Conexão Segura</span>
             </div>
+          </div>
+
+          <div>
+            <h4 className="font-heading font-semibold mb-4">Contato</h4>
             <Link 
               href="https://wa.me/5555999999999" 
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
               Fale Conosco
