@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ExternalLink, MessageCircle } from 'lucide-react'
+import Link from 'next/link'
 import { Modal, SelfieValidator } from '@/components/client'
 
 interface VerificarETerceiroProps {
@@ -16,6 +17,7 @@ interface VerificarETerceiroProps {
 export function VerificarETerceiro({ produto }: VerificarETerceiroProps) {
   const [showValidator, setShowValidator] = useState(false)
   const [verifiedHash, setVerifiedHash] = useState<string | null>(null)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   const handleVerified = (hash: string) => {
     setVerifiedHash(hash)
@@ -53,12 +55,33 @@ export function VerificarETerceiro({ produto }: VerificarETerceiroProps) {
   return (
     <>
       <button
-        onClick={() => setShowValidator(true)}
-        className="btn-whatsapp w-full text-lg py-4"
+        onClick={() => acceptedTerms && setShowValidator(true)}
+        disabled={!acceptedTerms}
+        className={`btn-whatsapp w-full text-lg py-4 ${!acceptedTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <ExternalLink className="w-6 h-6" />
         Comprar via WhatsApp
       </button>
+
+      <div className="mt-3 flex items-start gap-2">
+        <input
+          type="checkbox"
+          id="termos"
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          className="mt-1 w-4 h-4 rounded border-gray-300 text-sertão-600 focus:ring-sertão-500"
+        />
+        <label htmlFor="termos" className="text-sm text-gray-600">
+          Eu concordo com os{' '}
+          <Link href="/termos" className="text-sertão-600 hover:underline">
+            Termos de Uso
+          </Link>{' '}
+          e{' '}
+          <Link href="/privacidade" className="text-sertão-600 hover:underline">
+            Política de Privacidade
+          </Link>
+        </label>
+      </div>
 
       <Modal
         isOpen={showValidator}
@@ -67,7 +90,7 @@ export function VerificarETerceiro({ produto }: VerificarETerceiroProps) {
       >
         <SelfieValidator
           onVerified={handleVerified}
-        onClose={() => setShowValidator(false)}
+          onClose={() => setShowValidator(false)}
         />
       </Modal>
     </>
