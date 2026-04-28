@@ -54,7 +54,6 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   
-  // Allow admin to access /dashboard/codigos
   if (pathname === '/dashboard/codigos') {
     const adminLogged = request.cookies.get('admin_logged')?.value === 'true'
     if (adminLogged) {
@@ -73,6 +72,12 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
+
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block')
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
 
   return supabaseResponse
 }
