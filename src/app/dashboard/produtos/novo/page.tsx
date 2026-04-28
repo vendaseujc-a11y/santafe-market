@@ -25,6 +25,7 @@ export default function NovoProdutoPage() {
     preco: '',
     categoria: '',
     localizacao: 'Santa Fé do Sul - SP',
+    whatsapp: '',
   })
   const [imagens, setImagens] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
@@ -140,6 +141,7 @@ export default function NovoProdutoPage() {
           categoria: formData.categoria,
           imagens: imagensUrls,
           localizacao: formData.localizacao,
+          whatsapp: formData.whatsapp,
           status: 'ativo',
         })
         .select()
@@ -258,6 +260,19 @@ export default function NovoProdutoPage() {
                 value={formData.localizacao}
                 onChange={handleChange}
               />
+            </div>
+
+            <div>
+              <label className="label">WhatsApp para Contato</label>
+              <input
+                type="tel"
+                name="whatsapp"
+                placeholder="(55) 99999-9999"
+                className="input"
+                value={formData.whatsapp}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">Número que será mostrado ao comprador após verificação</p>
             </div>
 
             <div>

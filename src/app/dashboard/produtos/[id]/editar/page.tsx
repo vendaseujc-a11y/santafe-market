@@ -25,6 +25,7 @@ export default function EditarProdutoPage() {
     preco: '',
     categoria: '',
     localizacao: '',
+    whatsapp: '',
   })
   const [imagens, setImagens] = useState<string[]>([])
   const [newImages, setNewImages] = useState<File[]>([])
@@ -72,6 +73,7 @@ export default function EditarProdutoPage() {
         preco: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(produto.preco)),
         categoria: produto.categoria,
         localizacao: produto.localizacao || '',
+        whatsapp: produto.whatsapp || '',
       })
       setImagens(produto.imagens || [])
       setLoading(false)
@@ -151,6 +153,7 @@ export default function EditarProdutoPage() {
         categoria: formData.categoria,
         imagens: allImages,
         localizacao: formData.localizacao,
+        whatsapp: formData.whatsapp,
       }
 
       const { error: updateError } = await supabase
@@ -277,6 +280,19 @@ export default function EditarProdutoPage() {
                 value={formData.localizacao}
                 onChange={handleChange}
               />
+            </div>
+
+            <div>
+              <label className="label">WhatsApp para Contato</label>
+              <input
+                type="tel"
+                name="whatsapp"
+                placeholder="(55) 99999-9999"
+                className="input"
+                value={formData.whatsapp}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">Número que será mostrado ao comprador após verificação</p>
             </div>
 
             <div>
