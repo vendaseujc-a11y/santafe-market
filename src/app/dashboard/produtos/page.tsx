@@ -9,6 +9,7 @@ import { Modal, QRCodeModal } from '@/components/client'
 import { Plus, Edit, Trash2, Check, QrCode, Eye, Search } from 'lucide-react'
 
 const CATEGORIAS = [
+  { value: 'produtos', label: 'Produtos em Geral' },
   { value: 'eletronicos', label: 'Eletrônicos' },
   { value: 'servicos', label: 'Serviços' },
   { value: 'veiculos', label: 'Veículos' },
