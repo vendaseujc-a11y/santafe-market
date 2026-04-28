@@ -138,6 +138,7 @@ interface ProductCardProps {
     categoria?: string
     created_at: string
   }
+  small?: boolean
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -148,7 +149,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   outros: '📦',
 }
 
-export function ProductCard({ produto }: ProductCardProps) {
+export function ProductCard({ produto, small }: ProductCardProps) {
   const imagem = produto.imagens?.[0]
   const isNovo = new Date(produto.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
   const categoryIcon = CATEGORY_ICONS[produto.categoria || 'outros']
@@ -156,6 +157,29 @@ export function ProductCard({ produto }: ProductCardProps) {
   const preco = typeof produto.preco === 'number'
     ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.preco)
     : produto.preco
+
+  if (small) {
+    return (
+      <Link href={`/anuncio/${produto.slug}`} className="block group">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <div className="relative aspect-square bg-gray-50">
+            {imagem ? (
+              <img src={imagem} alt={produto.titulo} className="w-full h-full object-contain p-1" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-4xl">{categoryIcon}</div>
+            )}
+            {isNovo && (
+              <span className="absolute top-1 left-1 text-[10px] bg-ipê-400 text-white px-1.5 py-0.5 rounded">Novo</span>
+            )}
+          </div>
+          <div className="p-2">
+            <h3 className="text-xs font-medium text-gray-800 line-clamp-1">{produto.titulo}</h3>
+            <p className="text-sm font-bold text-sertão-600 mt-0.5">{preco}</p>
+          </div>
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <article className="card group">

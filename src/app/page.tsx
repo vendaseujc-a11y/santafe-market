@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createServerSupabase } from '@/lib/superabase-server'
-import { Header, Footer, SearchBar, ProductCard, ProductCardSkeleton } from '@/components'
+import { Header, Footer, SearchBar, ProductCard } from '@/components'
 import { Plus, TrendingUp, Shield, MapPin } from 'lucide-react'
 
 async function getProdutos() {
@@ -81,9 +81,9 @@ export default async function IndexPage() {
           </h2>
 
           {produtos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {produtos.map((produto: any) => (
-                <ProductCard key={produto.id} produto={produto} />
+                <ProductCard key={produto.id} produto={produto} small />
               ))}
             </div>
           ) : (
