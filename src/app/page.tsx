@@ -2,14 +2,25 @@ import Link from 'next/link'
 import { createServerSupabase } from '@/lib/superabase-server'
 import { Header, Footer, SearchBar, ProductCard } from '@/components'
 import { Plus, TrendingUp, Shield, MapPin } from 'lucide-react'
+import { headers } from 'next/headers'
 
-async function getProdutos() {
+async function getProdutos(searchParams: { busca?: string; categoria?: string }) {
   try {
     const supabase = await createServerSupabase()
-    const { data: produtos } = await supabase
+    let query = supabase
       .from('produtos')
       .select('*')
       .eq('status', 'ativo')
+
+    if (searchParams.categoria) {
+      query = query.eq('categoria', searchParams.categoria)
+    }
+
+    if (searchParams.busca) {
+      query = query.ilike('titulo', `%${searchParams.busca}%`)
+    }
+
+    const { data: produtos } = await query
       .order('created_at', { ascending: false })
       .limit(20)
 
@@ -20,8 +31,9 @@ async function getProdutos() {
   }
 }
 
-export default async function IndexPage() {
-  const produtos = await getProdutos()
+export default async function IndexPage(props: { searchParams: Promise<{ busca?: string; categoria?: string }> }) {
+  const searchParams = await props.searchParams
+  const produtos = await getProdutos(searchParams)
 
   return (
     <div className="min-h-screen flex flex-col">

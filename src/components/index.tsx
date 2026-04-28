@@ -8,8 +8,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex items-center justify-between h-16 gap-4">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-10 h-10 gradient-sertao rounded-xl flex items-center justify-center">
               <Package className="w-5 h-5 text-white" />
             </div>
@@ -19,7 +19,19 @@ export function Header() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <form action="/" method="get" className="flex-1 max-w-md hidden md:flex">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                name="busca"
+                placeholder="Buscar produtos..."
+                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-sertão-400 focus:ring-1 focus:ring-sertão-400"
+              />
+            </div>
+          </form>
+
+          <div className="flex items-center gap-3 flex-shrink-0">
             <Link href="/login" className="btn-secondary text-sm py-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Área do Membro</span>
