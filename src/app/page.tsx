@@ -143,9 +143,9 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
                 <div className="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-2xl flex items-center justify-center">
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Anúncie Grátis</h3>
+                <h3 className="text-lg font-semibold mb-2">Cresça suas vendas na internet</h3>
                 <p className="text-gray-600">
-                  Sem taxas de publicação. Divulgue seus produtos e serviços gratuitamente.
+                  Divulgue seus produtos e serviços para mais pessoas.
                 </p>
               </div>
             </div>
