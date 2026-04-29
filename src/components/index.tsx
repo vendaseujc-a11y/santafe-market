@@ -106,6 +106,12 @@ export function Footer() {
           </div>
         </div>
 
+          <div className="flex flex-wrap justify-center gap-4 text-sm text-sertão-400 mb-4">
+            <Link href="/privacidade" className="hover:text-white transition-colors">Privacidade</Link>
+            <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
+            <Link href="/seguranca" className="hover:text-white transition-colors">Políticas de Segurança</Link>
+          </div>
+
         <div className="border-t border-sertão-700 mt-8 pt-8 text-center text-sertão-400 text-sm">
           <p>© {new Date().getFullYear()} SantaFé Marketplace. Todos os direitos reservados.</p>
         </div>
