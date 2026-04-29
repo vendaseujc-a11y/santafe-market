@@ -52,7 +52,6 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
                 Compras seguras com verificação de identidade.
               </p>
               <Link href="/cadastro" className="btn-ipê text-lg px-8 py-4">
-                <Plus className="w-5 h-5" />
                 Quero Vender
               </Link>
             </div>
