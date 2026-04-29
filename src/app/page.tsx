@@ -81,7 +81,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
             </div>
             <div className="bg-white rounded-xl p-4 text-center">
               <Plus className="w-8 h-8 mx-auto mb-2 text-ipê-400" />
-              <p className="text-2xl font-bold text-ipê-400">Venda +</p>
+              <p className="text-2xl font-bold text-ipê-400">Anúncie seu Produto</p>
             </div>
           </div>
 
