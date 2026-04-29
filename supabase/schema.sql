@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS avaliacoes (
 CREATE INDEX idx_avaliacoes_vendedor ON avaliacoes(vendedor_id);
 
 -- ============================================
--- ROW LEVEL SECURITY (RLS)
+-- ROW LEVEL SECURITY (RLS) - Politicas Seguras
 -- ============================================
 
 -- Habilitar RLS em todas as tabelas
@@ -102,6 +102,7 @@ ALTER TABLE perfis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE produtos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE verificacoes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE avaliacoes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE codigos_acesso ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas existentes
 DROP POLICY IF EXISTS "Permitir visualização pública de perfis" ON perfis;
@@ -119,71 +120,112 @@ DROP POLICY IF EXISTS "Permitir visualização de verificações autenticadas" O
 DROP POLICY IF EXISTS "Permitir visualização pública de avaliações" ON avaliacoes;
 DROP POLICY IF EXISTS "Permitir inserção de avaliações" ON avaliacoes;
 
+DROP POLICY IF EXISTS "Permitir admin gerenciar codigos" ON codigos_acesso;
+DROP POLICY IF EXISTS "Permitir validacao publica de codigos" ON codigos_acesso;
+
 -- ============================================
--- POLÍTICAS: perfis
+-- POLÍTICAS: perfis (SEGURAS)
 -- ============================================
 
--- Qualquer pessoa logada pode ver perfis (para ver vendedor do anúncio)
-CREATE POLICY "Permitir visualização pública de perfis"
+-- Apenas usuarios autenticados podem ver perfis
+CREATE POLICY "permit_all_authenticated_read_perfis"
     ON perfis FOR SELECT
-    USING (auth.uid() IS NOT NULL);
+    TO authenticated
+    USING (true);
 
 -- Dono pode atualizar seu próprio perfil
-CREATE POLICY "Permitir atualização de próprio perfil"
+CREATE POLICY "permit_owner_update_perfis"
     ON perfis FOR UPDATE
+    TO authenticated
     USING (auth.uid() = id);
 
+-- Apenas anon pode inserir (usado pelo trigger de signup)
+CREATE POLICY "permit_trigger_insert_perfis"
+    ON perfis FOR INSERT
+    TO anon
+    WITH CHECK (true);
+
 -- ============================================
--- POLÍTICAS: produtos
+-- POLÍTICAS: produtos (SEGURAS)
 -- ============================================
 
--- Qualquer pessoa pode ver produtos ativos (público)
-CREATE POLICY "Permitir visualização pública de produtos ativos"
+-- Apenas usuarios autenticados podem ver produtos ativos
+CREATE POLICY "permit_all_authenticated_read_produtos"
     ON produtos FOR SELECT
+    TO authenticated
     USING (status = 'ativo' OR auth.uid() = vendedor_id);
 
+-- Publico pode ver produtos ativos (leitura publica)
+CREATE POLICY "permit_anon_read_produtos"
+    ON produtos FOR SELECT
+    TO anon
+    USING (status = 'ativo');
+
 -- Apenas vendedor logado pode inserir produtos
-CREATE POLICY "Permitir inserção de produtos pelo dono"
+CREATE POLICY "permit_owner_insert_produtos"
     ON produtos FOR INSERT
+    TO authenticated
     WITH CHECK (auth.uid() = vendedor_id);
 
 -- Apenas vendedor logado pode atualizar seu próprio produto
-CREATE POLICY "Permitir atualização de próprio produto"
+CREATE POLICY "permit_owner_update_produtos"
     ON produtos FOR UPDATE
+    TO authenticated
     USING (auth.uid() = vendedor_id);
 
 -- Apenas vendedor logado pode excluir seu próprio produto
-CREATE POLICY "Permitir exclusão de próprio produto"
+CREATE POLICY "permit_owner_delete_produtos"
     ON produtos FOR DELETE
+    TO authenticated
     USING (auth.uid() = vendedor_id);
 
 -- ============================================
--- POLÍTICAS: verificacoes
+-- POLÍTICAS: verificacoes (SEGURAS)
 -- ============================================
 
--- Qualquer pessoa pode inserir verificação (validação de selfie pública)
-CREATE POLICY "Permitir inserção de verificações públicas"
+-- Apenas anon pode inserir verificação (validação de selfie pública)
+CREATE POLICY "permit_anon_insert_verificacoes"
     ON verificacoes FOR INSERT
+    TO anon
     WITH CHECK (true);
 
--- Apenas pessoas autenticadas podem ver verificações
-CREATE POLICY "Permitir visualização de verificações autenticadas"
+-- Apenas admin pode ver verificacoes
+CREATE POLICY "permit_service_role_read_verificacoes"
     ON verificacoes FOR SELECT
-    USING (auth.uid() IS NOT NULL);
-
--- ============================================
--- POLÍTICAS: avaliacoes
--- ============================================
-
--- Qualquer pessoa pode ver avaliações
-CREATE POLICY "Permitir visualização pública de avaliações"
-    ON avaliacoes FOR SELECT
+    TO service_role
     USING (true);
 
--- Qualquer pessoa pode inserir avaliação
-CREATE POLICY "Permitir inserção de avaliações"
+-- ============================================
+-- POLÍTICAS: avaliacoes (SEGURAS)
+-- ============================================
+
+-- Publico pode ver avaliações
+CREATE POLICY "permit_anon_read_avaliacoes"
+    ON avaliacoes FOR SELECT
+    TO anon
+    USING (true);
+
+-- Apenas usuarios autenticados podem inserir avaliação
+CREATE POLICY "permit_authenticated_insert_avaliacoes"
     ON avaliacoes FOR INSERT
+    TO authenticated
     WITH CHECK (true);
+
+-- ============================================
+-- POLÍTICAS: codigos_acesso (SEGURAS)
+-- ============================================
+
+-- Publico pode validar código (leitura)
+CREATE POLICY "permit_anon_read_codigos"
+    ON codigos_acesso FOR SELECT
+    TO anon
+    USING (true);
+
+-- Apenas admin pode gerenciar códigos
+CREATE POLICY "permit_service_role_all_codigos"
+    ON codigos_acesso FOR ALL
+    TO service_role
+    USING (true);
 
 -- ============================================
 -- STORAGE BUCKET
@@ -201,17 +243,40 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('verificacoes', 'verificacoes', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Políticas para Storage
+-- ============================================
+-- POLÍTICAS DE STORAGE (SEGURAS)
+-- ============================================
 DROP POLICY IF EXISTS "Permitir upload de imagens de produtos" ON storage.objects;
 DROP POLICY IF EXISTS "Permitir visualização pública de imagens" ON storage.objects;
 
-CREATE POLICY "Permitir upload de imagens de produtos"
+-- Apenas usuarios autenticados podem fazer upload
+CREATE POLICY "permit_authenticated_upload_storage"
     ON storage.objects FOR INSERT
-    WITH CHECK (bucket_id IN ('produtos', 'avatares', 'verificacoes'));
+    TO authenticated
+    WITH CHECK (bucket_id IN ('produtos', 'avatares', 'verificacoes') AND auth.uid()::text = owner::text);
 
-CREATE POLICY "Permitir visualização pública de imagens"
+-- Dono pode atualizar/delete seu proprio arquivo
+CREATE POLICY "permit_owner_update_storage"
+    ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (auth.uid()::text = owner::text);
+
+CREATE POLICY "permit_owner_delete_storage"
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (auth.uid()::text = owner::text);
+
+-- Publico pode visualizar imagens
+CREATE POLICY "permit_anon_read_storage"
     ON storage.objects FOR SELECT
+    TO anon
     USING (bucket_id IN ('produtos', 'avatares', 'verificacoes'));
+
+-- Verificacoes pode ser inserido por anon (para selfie pública)
+CREATE POLICY "permit_anon_insert_verificacoes_storage"
+    ON storage.objects FOR INSERT
+    TO anon
+    WITH CHECK (bucket_id = 'verificacoes');
 
 -- ============================================
 -- FUNÇÕES AUXILIARES
