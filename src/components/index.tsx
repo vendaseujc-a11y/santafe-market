@@ -72,7 +72,7 @@ export function Footer() {
           <div>
             <h4 className="font-heading font-semibold mb-4">Categorias</h4>
             <ul className="space-y-2 text-sertão-300 text-sm">
-              <li><Link href="/?categoria=produtos" className="hover:text-ipê-400 transition-colors">Produtos em Gerais</Link></li>
+              <li><Link href="/?categoria=promocao" className="hover:text-ipê-400 transition-colors">Promoção</Link></li>
               <li><Link href="/?categoria=produtos" className="hover:text-ipê-400 transition-colors">Produtos em Geral</Link></li>
               <li><Link href="/?categoria=eletronicos" className="hover:text-ipê-400 transition-colors">Eletrônicos</Link></li>
               <li><Link href="/?categoria=servicos" className="hover:text-ipê-400 transition-colors">Serviços</Link></li>
@@ -129,6 +129,7 @@ export function SearchBar() {
 
         <select className="input">
           <option value="">Todas as categorias</option>
+          <option value="promocao">Promoção</option>
           <option value="produtos">Produtos em Geral</option>
           <option value="eletronicos">Eletrônicos</option>
           <option value="servicos">Serviços</option>
@@ -155,6 +156,7 @@ interface ProductCardProps {
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
+  promocao: '🏷️',
   produtos: '📦',
   eletronicos: '📱',
   servicos: '🔧',

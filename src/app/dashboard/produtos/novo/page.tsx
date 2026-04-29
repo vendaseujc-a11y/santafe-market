@@ -9,6 +9,7 @@ import { Toast } from '@/components/client'
 import { Upload, X, Image, Loader } from 'lucide-react'
 
 const CATEGORIAS = [
+  { value: 'promocao', label: 'Promoção' },
   { value: 'produtos', label: 'Produtos em Geral' },
   { value: 'eletronicos', label: 'Eletrônicos' },
   { value: 'servicos', label: 'Serviços' },
