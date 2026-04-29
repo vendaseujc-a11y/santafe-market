@@ -53,7 +53,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
               </p>
               <Link href="/cadastro" className="btn-ipê text-lg px-8 py-4">
                 <Plus className="w-5 h-5" />
-                Quero Anunciar no Site e Ser Vendedor
+                Quero Vender
               </Link>
             </div>
           </div>
