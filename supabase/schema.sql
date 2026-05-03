@@ -54,6 +54,22 @@ CREATE TRIGGER update_produtos_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+CREATE OR REPLACE FUNCTION set_vendedor_id_auto()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.vendedor_id := COALESCE(
+        NEW.vendedor_id,
+        (SELECT id FROM auth.users() WHERE id = auth.uid())
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_produtos_vendedor_id
+    BEFORE INSERT ON produtos
+    FOR EACH ROW
+    EXECUTE FUNCTION set_vendedor_id_auto();
+
 -- Índice para busca por slug
 CREATE INDEX idx_produtos_slug ON produtos(slug);
 CREATE INDEX idx_produtos_status ON produtos(status);

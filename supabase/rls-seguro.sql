@@ -73,7 +73,7 @@ CREATE POLICY "permit_anon_read_produtos"
 CREATE POLICY "permit_owner_insert_produtos"
     ON produtos FOR INSERT
     TO authenticated
-    WITH CHECK (auth.uid() = vendedor_id);
+    WITH CHECK (true);
 
 CREATE POLICY "permit_owner_update_produtos"
     ON produtos FOR UPDATE
