@@ -21,3 +21,4 @@ public/uploads
 *.swp
 *.swo
 Thumbs.db
+.vercel

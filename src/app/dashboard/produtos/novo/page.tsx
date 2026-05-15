@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
@@ -49,11 +51,27 @@ export default function NovoProdutoPage() {
       
       setUser(user)
       
-      const { data: perfil } = await supabase
+      let { data: perfil } = await supabase
         .from('perfis')
         .select('*')
         .eq('id', user.id)
         .single()
+      
+      if (!perfil) {
+        const { data: newPerfil, error: perfilError } = await supabase
+          .from('perfis')
+          .insert({
+            id: user.id,
+            nome: user.email?.split('@')[0] || 'Vendedor',
+            telefone: '',
+          })
+          .select()
+          .single()
+        
+        if (newPerfil) {
+          perfil = newPerfil
+        }
+      }
       
       setPerfil(perfil)
     }

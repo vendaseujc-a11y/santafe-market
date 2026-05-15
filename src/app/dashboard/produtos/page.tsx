@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -260,7 +262,7 @@ export default function ProdutosPage() {
         onClose={() => setQrModal(null)}
         title="Divulgar Anúncio"
       >
-        <QRCodeModal slug={qrModal?.slug} titulo={qrModal?.titulo} />
+        <QRCodeModal slug={qrModal?.slug} title={qrModal?.titulo} />
       </Modal>
 
       <Footer />
