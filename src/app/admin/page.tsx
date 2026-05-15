@@ -8,8 +8,8 @@ import { Package, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Header, Footer } from '@/components'
 
-const ADMIN_EMAIL = 'admin@santafe.com'
-const ADMIN_PASSWORD = 'SantaFe2026!'
+const ADMIN_EMAIL = 'jonatasc2009@gmail.com'
+const ADMIN_PASSWORD = 'Candi@!999'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
