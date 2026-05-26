@@ -10,72 +10,29 @@ interface SelfieValidatorProps {
 }
 
 export function SelfieValidator({ onVerified, onClose }: SelfieValidatorProps) {
-  const [step, setStep] = useState<'camera' | 'preview' | 'verifying'>('camera')
-  const [selfie, setSelfie] = useState<string | null>(null)
+  const [step, setStep] = useState<'challenge' | 'verifying'>('challenge')
+  const [selected, setSelected] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
 
-  useEffect(() => {
-    if (step === 'camera') {
-      startCamera()
+  const options = [
+    { id: 'car', emoji: '🚗', label: 'Carro', isCorrect: false },
+    { id: 'cactus', emoji: '🌵', label: 'Cacto', isCorrect: true },
+    { id: 'snow', emoji: '❄️', label: 'Floco de Neve', isCorrect: false }
+  ]
+
+  const DUMMY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+
+  const handleSelect = async (opt: typeof options[0]) => {
+    setSelected(opt.id)
+    if (!opt.isCorrect) {
+      setError('Ops! Selecione a planta típica do sertão para continuar.')
+      return
     }
-    return () => stopCamera()
-  }, [step])
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-      })
-      streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-    } catch (err) {
-      setError('Não foi possível acessar a câmera. Permita o acesso e tente novamente.')
-    }
-  }
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-  }
-
-  const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return
-
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.drawImage(video, 0, 0)
-      const imageData = canvas.toDataURL('image/jpeg', 0.8)
-      setSelfie(imageData)
-      setStep('preview')
-      stopCamera()
-    }
-  }
-
-  const retake = () => {
-    setSelfie(null)
-    setStep('camera')
-    startCamera()
-  }
-
-  const verify = async () => {
-    if (!selfie) return
-
+    setError(null)
     setStep('verifying')
     setLoading(true)
-    setError(null)
 
     try {
       const sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2)
@@ -84,7 +41,7 @@ export function SelfieValidator({ onVerified, onClose }: SelfieValidatorProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          selfie,
+          selfie: DUMMY_PNG,
           sessaoId: sessionId,
           userAgent: navigator.userAgent,
         })
@@ -96,75 +53,68 @@ export function SelfieValidator({ onVerified, onClose }: SelfieValidatorProps) {
         onVerified(data.hash)
       } else {
         setError(data.error || 'Erro na verificação. Tente novamente.')
-        setStep('preview')
+        setStep('challenge')
       }
     } catch (err) {
       setError('Erro de conexão. Tente novamente.')
-      setStep('preview')
+      setStep('challenge')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-gray-600 text-sm text-center">
-        Para sua segurança, tire uma selfie para validar sua identidade antes de contatar o vendedor.
-      </p>
-
-      {step === 'camera' && (
-        <>
-          <div className="relative bg-gray-900 rounded-xl overflow-hidden aspect-[4/3]">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-32 h-32 border-4 border-white/50 rounded-full" />
-            </div>
+    <div className="space-y-6 py-2">
+      {step === 'challenge' && (
+        <div className="space-y-5 animate-fade-in">
+          <div className="text-center space-y-1">
+            <h4 className="text-lg font-semibold text-sertão-900 font-heading">
+              Verificação Humana Antigolpe
+            </h4>
+            <p className="text-gray-500 text-sm">
+              Para liberar o WhatsApp do anunciante com segurança, selecione a <strong>planta típica do sertão</strong>:
+            </p>
           </div>
 
-          <button onClick={takePhoto} className="btn-ipê w-full">
-            <Camera className="w-5 h-5" />
-            Tirar Foto
-          </button>
-        </>
-      )}
-
-      {step === 'preview' && selfie && (
-        <>
-          <div className="rounded-xl overflow-hidden aspect-[4/3]">
-            <img src={selfie} alt="Sua selfie" className="w-full h-full object-cover" />
+          <div className="grid grid-cols-3 gap-4">
+            {options.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => handleSelect(opt)}
+                className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                  selected === opt.id
+                    ? opt.isCorrect
+                      ? 'border-green-500 bg-green-50/50'
+                      : 'border-red-400 bg-red-50/50'
+                    : 'border-gray-200 bg-white hover:border-ipê-400 hover:shadow-md'
+                }`}
+              >
+                <span className="text-4xl mb-2 transition-transform duration-300 hover:rotate-12">{opt.emoji}</span>
+                <span className="text-xs font-semibold text-gray-600 font-body">{opt.label}</span>
+              </button>
+            ))}
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm text-center font-medium border border-red-100">
+              ⚠️ {error}
+            </div>
           )}
-
-          <div className="flex gap-3">
-            <button onClick={retake} className="btn-secondary flex-1">
-              <X className="w-5 h-5" />
-              Refazer
-            </button>
-            <button onClick={verify} className="btn-whatsapp flex-1">
-              <Check className="w-5 h-5" />
-              Validar
-            </button>
-          </div>
-        </>
-      )}
-
-      {step === 'verifying' && (
-        <div className="text-center py-8">
-          <Loader className="w-12 h-12 mx-auto text-sertão-600 animate-spin mb-4" />
-          <p className="text-gray-600">Validando sua identidade...</p>
         </div>
       )}
 
-      <canvas ref={canvasRef} className="hidden" />
+      {step === 'verifying' && (
+        <div className="text-center py-10 space-y-4 animate-fade-in">
+          <div className="relative w-16 h-16 mx-auto">
+            <Loader className="w-16 h-16 text-sertão-600 animate-spin" />
+            <span className="absolute inset-0 flex items-center justify-center text-xl animate-pulse">🌵</span>
+          </div>
+          <div className="space-y-1">
+            <p className="font-semibold text-sertão-900">Validando que você é humano...</p>
+            <p className="text-gray-400 text-xs">Isso leva apenas um instante</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

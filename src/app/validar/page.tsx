@@ -2,28 +2,33 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Camera, Check, X, Loader, MessageCircle } from 'lucide-react'
+import { Check, Loader, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function ValidarPage() {
-  const [step, setStep] = useState<'camera' | 'preview' | 'verifying' | 'success'>('camera')
-  const [selfie, setSelfie] = useState<string | null>(null)
+  const [step, setStep] = useState<'challenge' | 'verifying' | 'success'>('challenge')
+  const [selected, setSelected] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hash, setHash] = useState<string | null>(null)
   const [produto, setProduto] = useState<any>(null)
   const [contato, setContato] = useState<{link: string, telefone: string} | null>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
   const produtoId = searchParams.get('produto') || searchParams.get('id')
   const providedHash = searchParams.get('hash')
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+
+  const options = [
+    { id: 'car', emoji: '🚗', label: 'Carro', isCorrect: false },
+    { id: 'cactus', emoji: '🌵', label: 'Cacto', isCorrect: true },
+    { id: 'snow', emoji: '❄️', label: 'Floco de Neve', isCorrect: false }
+  ]
+
+  const DUMMY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
 
   useEffect(() => {
     if (providedHash) {
@@ -53,7 +58,7 @@ export default function ValidarPage() {
         
         if (perfilData?.telefone) {
           const telefone = perfilData.telefone.replace(/\D/g, '')
-          const message = `Olá, vi seu anúncio "${data.titulo}" no ${siteUrl}/anuncio/${data.slug}. Minha identidade foi validada (ID: ${providedHash || hash}). Tenho interesse!`
+          const message = `Olá, vi seu anúncio "${data.titulo}" no ${siteUrl}/anuncio/${data.slug}. Minha verificação foi concluída (ID: ${providedHash || hash}). Tenho interesse!`
           setContato({
             link: `https://wa.me/${telefone}?text=${encodeURIComponent(message)}`,
             telefone
@@ -63,58 +68,17 @@ export default function ValidarPage() {
     }
     
     fetchProduto()
-  }, [produtoId])
+  }, [produtoId, providedHash, hash])
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-      })
-      streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-    } catch (err) {
-      setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
+  const handleSelect = async (opt: typeof options[0]) => {
+    setSelected(opt.id)
+    if (!opt.isCorrect) {
+      setError('Ops! Selecione a planta típica do sertão para continuar.')
+      return
     }
-  }
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-  }
-
-  const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return
-
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.drawImage(video, 0, 0)
-      const imageData = canvas.toDataURL('image/jpeg', 0.8)
-      setSelfie(imageData)
-      setStep('preview')
-      stopCamera()
-    }
-  }
-
-  const retake = () => {
-    setSelfie(null)
-    setStep('camera')
-    startCamera()
-  }
-
-  const verifyIdentity = async () => {
-    if (!selfie) return
-
-    setStep('verifying')
     setError(null)
+    setStep('verifying')
 
     try {
       const sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2)
@@ -124,7 +88,7 @@ export default function ValidarPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           produtoId,
-          selfie,
+          selfie: DUMMY_PNG,
           sessaoId: sessionId,
           userAgent: navigator.userAgent,
         })
@@ -135,25 +99,39 @@ export default function ValidarPage() {
       if (data.success) {
         setHash(data.hash)
         
-        if (produto?.telefone) {
-          const telefone = produto.telefone.replace(/\D/g, '')
-          const message = `Olá, vi seu anúncio "${produto.titulo}" no ${siteUrl}/anuncio/${produto.slug}. Minha identidade foi validada (ID: ${data.hash}). Tenho interesse!`
-          setContato({
-            link: `https://wa.me/${telefone}?text=${encodeURIComponent(message)}`,
-            telefone
-          })
+        if (produto) {
+          if (data.whatsappLink) {
+            setContato({
+              link: data.whatsappLink,
+              telefone: produto.whatsapp || ''
+            })
+          } else {
+            const { data: perfilData } = await supabase
+              .from('perfis')
+              .select('telefone')
+              .eq('id', produto.vendedor_id)
+              .single()
+            
+            if (perfilData?.telefone) {
+              const telefone = perfilData.telefone.replace(/\D/g, '')
+              const message = `Olá, vi seu anúncio "${produto.titulo}" no ${siteUrl}/anuncio/${produto.slug}. Minha verificação foi concluída (ID: ${data.hash}). Tenho interesse!`
+              setContato({
+                link: `https://wa.me/${telefone}?text=${encodeURIComponent(message)}`,
+                telefone
+              })
+            }
+          }
         }
         
         setStep('success')
-
         window.location.href = `/validar?id=${produtoId}&hash=${data.hash}`
       } else {
         setError(data.error || 'Erro na verificação. Tente novamente.')
-        setStep('preview')
+        setStep('challenge')
       }
     } catch (err) {
       setError('Erro de conexão. Verifique sua internet.')
-      setStep('preview')
+      setStep('challenge')
     }
   }
 
@@ -162,13 +140,6 @@ export default function ValidarPage() {
       window.open(contato.link, '_blank')
     }
   }
-
-  useEffect(() => {
-    if (step === 'camera') {
-      startCamera()
-    }
-    return () => stopCamera()
-  }, [step])
 
   return (
     <div className="min-h-screen bg-sertão-900 flex flex-col">
@@ -179,105 +150,92 @@ export default function ValidarPage() {
       </div>
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-2xl font-bold text-white text-center mb-6">
-            Validação de Identidade
+        <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-sertão-800/20">
+          <h1 className="text-2xl font-bold text-sertão-950 text-center mb-6 font-heading">
+            Verificação Humana
           </h1>
 
-          {step === 'camera' && (
-            <div className="space-y-6">
-              <div className="relative rounded-2xl overflow-hidden bg-black aspect-[4/3]">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-48 h-48 border-4 border-white/50 rounded-full" />
-                </div>
+          {step === 'challenge' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="text-center space-y-2">
+                <p className="text-gray-600 text-sm">
+                  Para garantir a segurança das suas negociações e liberar o contato do anunciante, por favor selecione a <strong>planta típica do sertão</strong> abaixo:
+                </p>
               </div>
 
-              <p className="text-sertão-200 text-sm text-center">
-                Posicione seu rosto dentro do círculo
-              </p>
-
-              <button onClick={takePhoto} className="btn-ipê w-full">
-                <Camera className="w-5 h-5" />
-                Tirar Selfie
-              </button>
-            </div>
-          )}
-
-          {step === 'preview' && selfie && (
-            <div className="space-y-6">
-              <div className="rounded-2xl overflow-hidden bg-black aspect-[4/3]">
-                <img src={selfie} alt="Sua selfie" className="w-full h-full object-cover" />
+              <div className="grid grid-cols-3 gap-4">
+                {options.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => handleSelect(opt)}
+                    className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                      selected === opt.id
+                        ? opt.isCorrect
+                          ? 'border-green-500 bg-green-50/50'
+                          : 'border-red-400 bg-red-50/50'
+                        : 'border-gray-200 bg-white hover:border-ipê-400 hover:shadow-md'
+                    }`}
+                  >
+                    <span className="text-4xl mb-2 transition-transform duration-300 hover:rotate-12">{opt.emoji}</span>
+                    <span className="text-xs font-semibold text-gray-600 font-body">{opt.label}</span>
+                  </button>
+                ))}
               </div>
 
               {error && (
-                <div className="bg-red-500 text-white rounded-xl p-4 text-sm">
-                  {error}
+                <div className="bg-red-50 text-red-600 rounded-xl p-3 text-sm text-center font-medium border border-red-100 animate-slide-up">
+                  ⚠️ {error}
                 </div>
               )}
-
-              <div className="flex gap-3">
-                <button onClick={retake} className="btn-secondary flex-1">
-                  <X className="w-5 h-5" />
-                  Refazer
-                </button>
-                <button onClick={verifyIdentity} className="btn-whatsapp flex-1">
-                  <Check className="w-5 h-5" />
-                  Validar
-                </button>
-              </div>
             </div>
           )}
 
           {step === 'verifying' && (
-            <div className="text-center">
-              <Loader className="w-16 h-16 mx-auto mb-6 text-ipê-400 animate-spin" />
-              <p className="text-white text-lg">Validando sua identidade...</p>
-              <p className="text-sertão-300 text-sm mt-2">Aguarde um momento</p>
+            <div className="text-center py-8 space-y-4">
+              <div className="relative w-16 h-16 mx-auto">
+                <Loader className="w-16 h-16 text-sertão-600 animate-spin" />
+                <span className="absolute inset-0 flex items-center justify-center text-xl animate-pulse">🌵</span>
+              </div>
+              <div>
+                <p className="text-sertão-900 font-semibold text-lg">Processando validação...</p>
+                <p className="text-gray-400 text-sm mt-1">Aguarde um momento</p>
+              </div>
             </div>
           )}
 
           {step === 'success' && (
-            <div className="space-y-6 text-center">
-              <div className="w-20 h-20 mx-auto bg-green-500 rounded-full flex items-center justify-center animate-bounce-in">
+            <div className="space-y-6 text-center animate-bounce-in">
+              <div className="w-20 h-20 mx-auto bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
                 <Check className="w-10 h-10 text-white" />
               </div>
 
               <div>
-                <p className="text-white text-xl font-semibold">Identidade Validada!</p>
-                <p className="text-sertão-300 text-sm mt-2">
-                  ID de verificação: <span className="font-mono">{hash}</span>
+                <p className="text-sertão-950 text-xl font-bold font-heading">Verificação Concluída!</p>
+                <p className="text-gray-500 text-xs mt-2">
+                  Código de segurança: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-gray-700">{hash}</span>
                 </p>
               </div>
 
               {contato ? (
-                <button onClick={openWhatsApp} className="btn-whatsapp w-full text-lg py-4">
-                  <MessageCircle className="w-5 h-5" />
+                <button onClick={openWhatsApp} className="btn-whatsapp w-full text-lg py-4 flex items-center justify-center gap-2 shadow-lg hover:shadow-green-100 transition-all duration-300">
+                  <MessageCircle className="w-6 h-6" />
                   Falar no WhatsApp
                 </button>
               ) : (
-                <div className="bg-sertão-800 rounded-xl p-4">
-                  <p className="text-sertão-300 text-sm">
-                    Anunciante não tem WhatsApp cadastrado
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                  <p className="text-gray-500 text-sm">
+                    Anunciante não possui WhatsApp cadastrado
                   </p>
                 </div>
               )}
 
-              <Link href={produto?.slug ? `/anuncio/${produto.slug}` : '/'} className="btn-secondary w-full">
+              <Link href={produto?.slug ? `/anuncio/${produto.slug}` : '/'} className="btn-secondary w-full block py-3 text-center font-medium">
                 Voltar ao Anúncio
               </Link>
             </div>
           )}
         </div>
       </main>
-
-      <canvas ref={canvasRef} className="hidden" />
     </div>
   )
 }

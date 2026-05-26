@@ -34,16 +34,16 @@ export function VerificarETerceiro({ produto }: VerificarETerceiroProps) {
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <p className="text-green-700 font-semibold">Identidade Verificada!</p>
+          <p className="text-green-700 font-semibold">Verificação Concluída!</p>
         </div>
         <p className="text-green-600 text-sm mb-3">
-          Sua identidade foi validada. Entre em contato com o anunciante.
+          Você provou que é humano. Entre em contato com o anunciante.
         </p>
         <a 
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-whatsapp w-full text-lg py-4"
+          className="btn-whatsapp w-full text-lg py-4 flex items-center justify-center gap-2"
         >
           <MessageCircle className="w-6 h-6" />
           Contatar no WhatsApp
@@ -86,7 +86,7 @@ export function VerificarETerceiro({ produto }: VerificarETerceiroProps) {
       <Modal
         isOpen={showValidator}
         onClose={() => setShowValidator(false)}
-        title="Validar Identidade"
+        title="Verificação Humana"
       >
         <SelfieValidator
           onVerified={handleVerified}
