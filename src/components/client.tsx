@@ -26,7 +26,7 @@ export function SelfieValidator({ onVerified, onClose }: SelfieValidatorProps) {
   const handleSelect = async (opt: typeof options[0]) => {
     setSelected(opt.id)
     if (!opt.isCorrect) {
-      setError('Ops! Selecione a planta típica do sertão para continuar.')
+      setError('Ops! Selecione a planta típica do site para continuar.')
       return
     }
 
@@ -72,7 +72,7 @@ export function SelfieValidator({ onVerified, onClose }: SelfieValidatorProps) {
               Verificação Humana Antigolpe
             </h4>
             <p className="text-gray-500 text-sm">
-              Para liberar o WhatsApp do anunciante com segurança, selecione a <strong>planta típica do sertão</strong>:
+              Para liberar o WhatsApp do anunciante com segurança, selecione a <strong>planta típica do site</strong>:
             </p>
           </div>
 
