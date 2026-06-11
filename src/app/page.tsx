@@ -64,7 +64,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
               </h1>
               
               <p className="text-lg md:text-xl text-sertão-100 max-w-2xl mx-auto font-light leading-relaxed">
-                Conectamos compradores e vendedores locais com verificação de identidade via selfie, eliminando golpes e aproximando vizinhos.
+                Conectamos compradores e vendedores locais com verificação humana, eliminando golpes e aproximando vizinhos.
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -194,7 +194,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
                 </div>
                 <h3 className="text-lg font-bold text-sertão-950 mb-2 font-heading">Compre Sem Medo</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">
-                  Sem robôs ou golpes. Todo comprador realiza verificação facial rápida antes de contatar o anunciante.
+                  Sem robôs ou golpes. Todo comprador realiza verificação humana e rápida antes de contatar o anunciante.
                 </p>
               </div>
               <div className="text-center bg-white p-8 rounded-2xl border border-cream-200/30 shadow-sm hover:shadow-md transition-shadow">
