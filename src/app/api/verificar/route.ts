@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
       const { data } = await supabase
         .from('produtos')
-        .select('*, perfis!vendedores(telefone)')
+        .select('*, perfis(telefone)')
         .eq('id', produtoId)
         .single()
       
