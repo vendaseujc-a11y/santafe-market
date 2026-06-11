@@ -69,7 +69,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/cadastro" className="btn-ipê text-base px-8 py-4 shadow-lg shadow-ipê-400/15 hover:scale-102 transition-all duration-300 font-bold w-full sm:w-auto">
-                  Vender agora no Sertão
+                  Vender agora no Site
                 </Link>
                 <Link href="/login" className="btn-secondary border-white text-white hover:bg-white/10 text-base px-8 py-4 w-full sm:w-auto font-medium">
                   Área do Vendedor
@@ -154,7 +154,7 @@ export default async function IndexPage(props: { searchParams: Promise<{ busca?:
 
           {/* Products Grid */}
           {produtos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
               {produtos.map((produto: any) => (
                 <ProductCard key={produto.id} produto={produto} />
               ))}

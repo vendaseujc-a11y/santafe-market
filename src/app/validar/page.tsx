@@ -73,7 +73,7 @@ export default function ValidarPage() {
   const handleSelect = async (opt: typeof options[0]) => {
     setSelected(opt.id)
     if (!opt.isCorrect) {
-      setError('Ops! Selecione a planta típica do sertão para continuar.')
+      setError('Ops! Selecione a planta típica do site para continuar.')
       return
     }
 
@@ -159,7 +159,7 @@ export default function ValidarPage() {
             <div className="space-y-6 animate-fade-in">
               <div className="text-center space-y-2">
                 <p className="text-gray-600 text-sm">
-                  Para garantir a segurança das suas negociações e liberar o contato do anunciante, por favor selecione a <strong>planta típica do sertão</strong> abaixo:
+                  Para garantir a segurança das suas negociações e liberar o contato do anunciante, por favor selecione a <strong>planta típica do site</strong> abaixo:
                 </p>
               </div>
 

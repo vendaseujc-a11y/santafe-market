@@ -221,7 +221,7 @@ export function ProductCard({ produto, small }: ProductCardProps) {
   }
 
   return (
-    <article className="card group hover:-translate-y-2 hover:shadow-xl hover:shadow-sertão-600/5 duration-300 flex flex-col h-full border border-cream-200/40">
+    <article className="card group hover:-translate-y-1.5 hover:shadow-lg hover:shadow-sertão-600/5 duration-300 flex flex-col h-full border border-cream-200/40">
       <div className="relative aspect-[4/3] overflow-hidden bg-cream-50/20 rounded-t-2xl">
         {imagem ? (
           <img
@@ -230,34 +230,34 @@ export function ProductCard({ produto, small }: ProductCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl bg-cream-50">
+          <div className="w-full h-full flex items-center justify-center text-3xl sm:text-4xl bg-cream-50">
             {categoryIcon}
           </div>
         )}
         {isNovo && (
-          <span className="absolute top-3.5 left-3.5 badge-ipê bg-ipê-400 text-sertão-950 font-bold px-3 py-1 rounded-full text-xs shadow-md">Novo</span>
+          <span className="absolute top-2 left-2 bg-ipê-400 text-sertão-950 font-bold px-2 py-0.5 rounded-full text-[10px] shadow-md">Novo</span>
         )}
       </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <span className="text-xs font-semibold text-sertão-500 uppercase tracking-wider mb-1">
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <span className="text-[10px] font-semibold text-sertão-500 uppercase tracking-wider mb-0.5">
           {produto.categoria}
         </span>
-        <h3 className="font-heading font-bold text-lg text-gray-900 line-clamp-2 mb-2 group-hover:text-sertão-600 transition-colors flex-1">
+        <h3 className="font-heading font-bold text-xs sm:text-sm text-gray-900 line-clamp-2 mb-1.5 group-hover:text-sertão-600 transition-colors flex-1">
           {produto.titulo}
         </h3>
 
-        <div className="flex items-baseline gap-1.5 mb-4">
-          <p className="text-2xl font-extrabold text-sertão-600">
+        <div className="flex items-baseline gap-1 mb-3">
+          <p className="text-sm sm:text-base font-extrabold text-sertão-600">
             {preco}
           </p>
         </div>
 
         <Link
           href={`/anuncio/${produto.slug}`}
-          className="btn-ipê w-full py-3 shadow-md shadow-ipê-500/10 hover:shadow-ipê-500/20 transition-all duration-300 font-bold"
+          className="btn-ipê w-full py-1.5 sm:py-2 text-[11px] sm:text-xs shadow-md shadow-ipê-500/10 hover:shadow-ipê-500/20 transition-all duration-300 font-bold text-center rounded-lg"
         >
-          Conhecer o Produto
+          Ver Detalhes
         </Link>
       </div>
     </article>
